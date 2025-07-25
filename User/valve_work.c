@@ -133,7 +133,7 @@ void valva_check_timer_callback(void *parameter)
             valve_timer_stop(&valve_check_timer);
         }
         break;
-    case 15: // check start and turn back
+    case 15: //如果15秒开到位就开始回转
         if (GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_4) == 0)
         {
             GPIO_WriteBit(GPIOB, GPIO_Pin_12, Bit_RESET);
@@ -146,18 +146,23 @@ void valva_check_timer_callback(void *parameter)
             warning_enable(InternalValveFailEvent);
         }
         break;
-    case 20: // check back and turn forward
-        if (GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_4) == 1)
-        {
-            GPIO_WriteBit(GPIOB, GPIO_Pin_12, Bit_SET);
-        }
-        else
+    case 20: //turn forward
+        if (GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_8) == 0)//如果关到位被按下
         {
             valve_valid = 0;
             internal_valve_check_result = 1;
             valve_timer_stop(&valve_check_timer);
             warning_enable(InternalValveFailEvent);
-            GPIO_WriteBit(GPIOB, GPIO_Pin_12, Bit_SET);
+        }
+        GPIO_WriteBit(GPIOB, GPIO_Pin_12, Bit_SET);
+        break;
+    case 21: //check back
+        if(GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_4) == 0)//如果开到位被按下，就报警（相当于没弹开）
+        {
+            valve_valid = 0;
+            internal_valve_check_result = 1;
+            valve_timer_stop(&valve_check_timer);
+            warning_enable(InternalValveFailEvent);
         }
         break;
     case 28: // check forward
